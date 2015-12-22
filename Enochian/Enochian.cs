@@ -4,18 +4,35 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using Clio.Utilities;
 using Enochian;
 using ff14bot;
 using ff14bot.AClasses;
 using ff14bot.Enums;
 using ff14bot.Helpers;
+using ff14bot.Interfaces;
+using ff14bot.Managers;
 using ff14bot.Objects;
 using TreeSharp;
 
 namespace Enochian
 {
+    public class SpellCast
+    {
+        public Spell Spell { get; set; }
+        public DateTime CastTime { get; set;  }
+
+        public SpellCast(Spell spell)
+        {
+            Spell = spell;
+            CastTime = DateTime.Now;
+        }
+    }
     public class Enochian : CombatRoutine
     {
+        public static Spell LastSpell { get; set; }
+        public static List<SpellCast> LastSpells { get; private set; }
+
         public override string Name
         {
             get { return "Enochian"; }
@@ -36,24 +53,23 @@ namespace Enochian
         public override void Pulse()
         {
             base.Pulse();
+            // clean up after a min
+            LastSpells.RemoveAll(x => x.CastTime < DateTime.Now.AddMinutes(-1));
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+            LastSpells = new IndexedList<SpellCast>();
+            Logging.Write(Colors.BlueViolet, "[Enochian] Init");
         }
 
         public override Composite CombatBehavior
         {
-            get { return new ActionRunCoroutine(ctx => Routine.Combat(new GameState(Core.Player))); } 
+            get { return new ActionRunCoroutine(ctx => Routine.Combat(Core.Player)); } 
         }
     }
 
-    public class GameState
-    {
-        public uint CurrentMana;
-        public GameState(LocalPlayer player)
-        {
-            CurrentMana = player.CurrentMana;
-            foreach (var aura in player.CharacterAuras.AuraList)
-            {
-                Logging.Write(Colors.Red, "Aura: {0} {1} {2}", aura.LocalizedName, aura.Id, aura.TimeLeft);
-            }
-        }
-    }
+
+    
 }

@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
+using System.Windows.Media.Media3D;
 using Buddy.Coroutines;
+using ff14bot.Helpers;
 using ff14bot.Managers;
 using ff14bot.Objects;
 
@@ -56,6 +59,8 @@ namespace Enochian
 
         public async Task<bool> Cast(GameObject target = null)
         {
+            Logging.Write(Colors.Red, "[Enochian] Casting {0}", Name);
+            Enochian.LastSpell = this;
             await Coroutine.Wait(1000, () => Actionmanager.DoAction(ID, target));
             return true;
         }
